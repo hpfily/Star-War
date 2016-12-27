@@ -4,6 +4,7 @@
 #include <time.h>
 #define RED_ID  0
 #define BLUE_ID 1
+#define WAIT_ID	2
 #define TRUE 1
 #define FALSE 0;
 #define RANDOM(x) (rand()%x)
@@ -74,6 +75,11 @@ public:
 		return TRUE;
 	}
 
+	DWORD getSize()
+	{
+		return m_Size;
+	}
+
 };
 class Map
 {
@@ -93,6 +99,7 @@ class Map
 public:
 	Map()
 	{
+		//需要修改
 		m_pAncientCore	= new Stack(12);
 		m_pDoctor		= new Stack(8);
 		m_pCrystal		= new Stack(18);
@@ -136,7 +143,7 @@ public:
 
 	}
 
-	void m_fGetScore(DWORD camp, Stack *pCardStack)
+	void m_fWinScore(DWORD camp, Stack *pCardStack)
 	{
 		Stack* pScoreStack;
 		switch (camp)
@@ -146,6 +153,9 @@ public:
 				break;
 			case BLUE_ID:
 				pScoreStack = m_pScoreBlue;
+				break;
+			case WAIT_ID:
+				pScoreStack = m_pWating;
 				break;
 			default:
 				return;
@@ -172,18 +182,40 @@ public:
 		m_pDoctor->push(pCard);
 		if (!m_pAncientCore->isEmpty()&&!m_pCrystal->isEmpty())
 		{
-			m_fGetScore(camp, m_pCrystal);
+			m_fWinScore(camp, m_pCrystal);
 			return;
 		}
 		if (!m_pAncientCore->isEmpty())
 		{
-			m_fGetScore(camp, m_pAncientCore);
+			m_fWinScore(camp, m_pAncientCore);
 			return;
 		}
 		if (!m_pCrystal->isEmpty())
 		{
-			m_fGetScore(camp, m_pCrystal);
+			m_fWinScore(camp, m_pCrystal);
 			return;
+		}
+
+	}
+	void Cardfunc_FlyPeople(DWORD camp, Card* pCard)
+	{
+		m_pFlyPeople->push(pCard);
+		if (m_pCrystal->isEmpty())
+		{
+			return;
+		}
+		m_fWinScore(camp, m_pCrystal);
+	}
+	void Cardfunc_Canno(DWORD camp, Card* pCard)
+	{
+		m_pCannon->push(pCard);
+		if (m_pFlyPeople->isEmpty())
+		{
+			return;
+		}
+		if (m_pCannon->)
+		{
+
 		}
 
 	}
@@ -196,7 +228,7 @@ Map g_Map;
 Card  g_CardTable[52] =
 {
 //	 id     num     score     name
-	{ 1		,3		,1		,"风暴巨炮"			,&Map::Cardfunc_Core},
+	{ 1		,3		,1		,"风暴巨炮"		,&Map::Cardfunc_Core},
 	{ 2		,3		,1		,"风暴巨炮" },
 	{ 3		,3		,1		,"风暴巨炮" },
 	{ 4		,3		,2		,"风暴巨炮" },
