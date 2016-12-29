@@ -5,9 +5,15 @@
 #define RED_ID  0
 #define BLUE_ID 1
 #define WAIT_ID	2
+#define WINSHIP_ID 3
+
+#define CANNON_ENABLE_NUMBER 3
+
 #define TRUE 1
 #define FALSE 0;
+
 #define RANDOM(x) (rand()%x)
+
 typedef unsigned int DWORD;
 
 
@@ -90,12 +96,13 @@ class Map
 	Stack	*m_pBattleship;
 	Stack	*m_pMonster;
 	Stack	*m_pSoldier;
-	Stack	*m_pSeachMachine;
+	Stack	*m_pSearchMachine;
 	Stack	*m_pCannon;
 	Stack	*m_pWating;
 
 	Stack	*m_pScoreRed;
 	Stack	*m_pScoreBlue;
+	Stack	*m_pWinShip;
 public:
 	Map()
 	{
@@ -107,12 +114,15 @@ public:
 		m_pBattleship	= new Stack(3);
 		m_pMonster		= new Stack(8);
 		m_pSoldier		= new Stack(2);
-		m_pSeachMachine	= new Stack(4);
+		m_pSearchMachine	= new Stack(4);
 		m_pCannon		= new Stack(3);
+		
 		m_pWating		= new Stack(20);
-
 		m_pScoreRed		= new Stack(104);
 		m_pScoreBlue	= new Stack(104);
+
+		m_pWinShip		= new Stack(9);
+
 	}
 	~Map()
 	{
@@ -123,11 +133,12 @@ public:
 		delete	m_pBattleship;
 		delete	m_pMonster;
 		delete	m_pSoldier;
-		delete	m_pSeachMachine;
+		delete	m_pSearchMachine;
 		delete	m_pCannon;
 		delete	m_pWating;
 		delete	m_pScoreRed;
 		delete	m_pScoreBlue;
+		delete	m_pWinShip;
 		m_pAncientCore=NULL;
 		m_pDoctor=NULL;
 		m_pCrystal=NULL;
@@ -135,16 +146,20 @@ public:
 		m_pBattleship=NULL;
 		m_pMonster=NULL;
 		m_pSoldier=NULL;
-		m_pSeachMachine=NULL;
+		m_pSearchMachine=NULL;
 		m_pCannon=NULL;
 		m_pWating=NULL;
 		m_pScoreRed = NULL;
 		m_pScoreBlue = NULL;
-
+		m_pWinShip = NULL;
 	}
 
 	void m_fWinScore(DWORD camp, Stack *pCardStack)
 	{
+		if (pCardStack->isEmpty())
+		{
+			return;
+		}
 		Stack* pScoreStack;
 		switch (camp)
 		{
@@ -157,11 +172,13 @@ public:
 			case WAIT_ID:
 				pScoreStack = m_pWating;
 				break;
+			case WINSHIP_ID:
+				pScoreStack = m_pWinShip;
 			default:
 				return;
 				break;
 		}
-		while (pCardStack->isEmpty())
+		while (!pCardStack->isEmpty())
 		{
 			Card *pTemp;
 			pCardStack->pop(&pTemp);
@@ -200,94 +217,118 @@ public:
 	void Cardfunc_FlyPeople(DWORD camp, Card* pCard)
 	{
 		m_pFlyPeople->push(pCard);
-		if (m_pCrystal->isEmpty())
-		{
-			return;
-		}
+
 		m_fWinScore(camp, m_pCrystal);
+
 	}
 	void Cardfunc_Canno(DWORD camp, Card* pCard)
 	{
 		m_pCannon->push(pCard);
-		if (m_pFlyPeople->isEmpty())
-		{
-			return;
-		}
-		if (m_pCannon->)
-		{
 
+		if (m_pCannon->isFull())
+		{
+			m_fWinScore(camp, m_pFlyPeople);
+			m_fWinScore(WAIT_ID, m_pWating);
 		}
-
 	}
+	void Cardfunc_Battleship(DWORD camp, Card* pCard)
+	{
+		m_pBattleship->push(pCard);
+		if (m_pBattleship->isFull())
+		{
+			m_fWinScore(camp, m_pWating);
+			m_fWinScore(WINSHIP_ID, m_pBattleship);
+		}
+	}
+	void Cardfunc_Monster(DWORD camp, Card* pCard)
+	{
+		m_pMonster->push(pCard);
+		m_fWinScore(camp, m_pDoctor);
+	}
+	void Cardfunc_Soldier(DWORD camp, Card* pCard)
+	{
+		m_pSoldier->push(pCard);
+		if (m_pSoldier->isFull())
+		{
+			m_fWinScore(camp, m_pMonster);
+			m_fWinScore(WAIT_ID,m_pSoldier);
+		}
+	}
+	void Cardfunc_SeachMachine(DWORD camp, Card* pCard)
+	{
+		m_pSearchMachine->push(pCard);
+		if (m_pSearchMachine->isFull())
+		{
+			m_fWinScore(camp, m_pSearchMachine);
+		}
+	}
+	
 };
 Map g_Map;
-
-
-
 
 Card  g_CardTable[52] =
 {
 //	 id     num     score     name
-	{ 1		,3		,1		,"风暴巨炮"		,&Map::Cardfunc_Core},
-	{ 2		,3		,1		,"风暴巨炮" },
-	{ 3		,3		,1		,"风暴巨炮" },
-	{ 4		,3		,2		,"风暴巨炮" },
-	{ 5		,3		,2		,"风暴巨炮" },
-	{ 6		,3		,2		,"风暴巨炮" },
+	{ 1		,3		,1		,"风暴巨炮"		,&Map::Cardfunc_Canno },
+	{ 2		,3		,1		,"风暴巨炮"		,&Map::Cardfunc_Canno },
+	{ 3		,3		,1		,"风暴巨炮"		,&Map::Cardfunc_Canno },
+	{ 4		,3		,2		,"风暴巨炮"		,&Map::Cardfunc_Canno },
+	{ 5		,3		,2		,"风暴巨炮"		,&Map::Cardfunc_Canno },
+	{ 6		,3		,2		,"风暴巨炮"		,&Map::Cardfunc_Canno },
 
-	{ 7		,2		,1		,"外星翼人" },
-	{ 8		,2		,1		,"外星翼人" },
-	{ 9		,2		,2		,"外星翼人" },
-	{ 10	,2		,2		,"外星翼人" },
-	{ 11	,1		,3		,"外星翼人" },
+	{ 7		,2		,1		,"外星翼人" ,	&Map::Cardfunc_FlyPeople },
+	{ 8		,2		,1		,"外星翼人" ,	&Map::Cardfunc_FlyPeople },
+	{ 9		,2		,2		,"外星翼人" ,	&Map::Cardfunc_FlyPeople },
+	{ 10	,2		,2		,"外星翼人" ,	&Map::Cardfunc_FlyPeople },
+	{ 11	,1		,3		,"外星翼人" ,	&Map::Cardfunc_FlyPeople },
 
-	{ 12	,3		,1		,"能量水晶" },
-	{ 13	,3		,1		,"能量水晶" },
-	{ 14	,3		,1		,"能量水晶" },
-	{ 15	,3		,2		,"能量水晶" },
-	{ 16	,3		,2		,"能量水晶" },
-	{ 17	,3		,2		,"能量水晶" },
-	{ 18	,2		,3		,"能量水晶" },
-	{ 19	,2		,3		,"能量水晶" },
-	{ 20	,1		,4		,"能量水晶" },
+	{ 12	,3		,1		,"能量水晶" ,	&Map::Cardfunc_Crystal },
+	{ 13	,3		,1		,"能量水晶" ,	&Map::Cardfunc_Crystal },
+	{ 14	,3		,1		,"能量水晶" ,	&Map::Cardfunc_Crystal },
+	{ 15	,3		,2		,"能量水晶" ,	&Map::Cardfunc_Crystal },
+	{ 16	,3		,2		,"能量水晶" ,	&Map::Cardfunc_Crystal },
+	{ 17	,3		,2		,"能量水晶" ,	&Map::Cardfunc_Crystal },
+	{ 18	,2		,3		,"能量水晶" ,	&Map::Cardfunc_Crystal },
+	{ 19	,2		,3		,"能量水晶" ,	&Map::Cardfunc_Crystal },
+	{ 20	,1		,4		,"能量水晶" ,	&Map::Cardfunc_Crystal },
 
-	{ 21	,2		,1		,"星际战士" },
-	{ 22	,2		,1		,"星际战士" },
-	{ 23	,2		,2		,"星际战士" },
-	{ 24	,2		,2		,"星际战士" },
+	{ 21	,2		,1		,"星际战士" ,    &Map::Cardfunc_Soldier },
+	{ 22	,2		,1		,"星际战士" ,    &Map::Cardfunc_Soldier },
+	{ 23	,2		,2		,"星际战士" ,    &Map::Cardfunc_Soldier },
+	{ 24	,2		,2		,"星际战士" ,    &Map::Cardfunc_Soldier },
 
-	{ 25	,2		,1		,"女博士" },
-	{ 26	,2		,1		,"女博士" },
-	{ 27	,2		,2		,"女博士" },
-	{ 28	,2		,2		,"女博士" },
+	{ 25	,2		,1		,"女博士" ,		&Map::Cardfunc_Doctor },
+	{ 26	,2		,1		,"女博士" ,		&Map::Cardfunc_Doctor },
+	{ 27	,2		,2		,"女博士" ,		&Map::Cardfunc_Doctor },
+	{ 28	,2		,2		,"女博士" ,		&Map::Cardfunc_Doctor },
 
-	{ 29	,2		,1		,"异形怪兽" },
-	{ 30	,2		,1		,"异形怪兽" },
-	{ 31	,1		,2		,"异形怪兽" },
-	{ 32	,1		,3		,"异形怪兽" },
+	{ 29	,2		,1		,"异形怪兽" ,    &Map::Cardfunc_Monster },
+	{ 30	,2		,1		,"异形怪兽" ,    &Map::Cardfunc_Monster },
+	{ 31	,1		,2		,"异形怪兽" ,    &Map::Cardfunc_Monster },
+	{ 32	,1		,3		,"异形怪兽" ,    &Map::Cardfunc_Monster },
 
-	{ 33	,6		,2		,"远古核心" },
-	{ 34	,6		,2		,"远古核心" },
-	{ 35	,6		,2		,"远古核心" },
-	{ 36	,6		,2		,"远古核心" },
-	{ 37	,6		,2		,"远古核心" },
-	{ 38	,6		,2		,"远古核心" },
+	{ 33	,6		,2		,"远古核心" ,    &Map::Cardfunc_Core },
+	{ 34	,6		,2		,"远古核心" ,    &Map::Cardfunc_Core },
+	{ 35	,6		,2		,"远古核心" ,    &Map::Cardfunc_Core },
+	{ 36	,6		,2		,"远古核心" ,    &Map::Cardfunc_Core },
+	{ 37	,6		,2		,"远古核心" ,    &Map::Cardfunc_Core },
+	{ 38	,6		,2		,"远古核心" ,    &Map::Cardfunc_Core },
 
-	{ 39	,2		,1		,"探索机器" },
-	{ 40	,2		,1		,"探索机器" },
-	{ 41	,2		,2		,"探索机器" },
-	{ 42	,2		,2		,"探索机器" },
-	{ 43	,2		,3		,"探索机器" },
-	{ 44	,2		,3		,"探索机器" },
-	{ 45	,2		,4		,"探索机器" },
-	{ 46	,2		,4		,"探索机器" },
+	{ 39	,2		,1		,"探索机器" ,    &Map::Cardfunc_SeachMachine },
+	{ 40	,2		,1		,"探索机器" ,    &Map::Cardfunc_SeachMachine },
+	{ 41	,2		,2		,"探索机器" ,    &Map::Cardfunc_SeachMachine },
+	{ 42	,2		,2		,"探索机器" ,    &Map::Cardfunc_SeachMachine },
+	{ 43	,2		,3		,"探索机器" ,    &Map::Cardfunc_SeachMachine },
+	{ 44	,2		,3		,"探索机器" ,    &Map::Cardfunc_SeachMachine },
+	{ 45	,2		,4		,"探索机器" ,    &Map::Cardfunc_SeachMachine },
+	{ 46	,2		,4		,"探索机器" ,    &Map::Cardfunc_SeachMachine },
 
-	{ 47	,6		,0		,"征服战舰" },
-	{ 48	,6		,0		,"征服战舰" },
-	{ 49	,6		,0		,"征服战舰" },
-	{ 50	,6		,0		,"征服战舰" },
-	{ 51	,6		,0		,"征服战舰" },
-	{ 52	,6		,0		,"征服战舰" },
+	{ 47	,6		,0		,"征服战舰" ,    &Map::Cardfunc_Battleship },
+	{ 48	,6		,0		,"征服战舰" ,    &Map::Cardfunc_Battleship },
+	{ 49	,6		,0		,"征服战舰" ,    &Map::Cardfunc_Battleship },
+	{ 50	,6		,0		,"征服战舰" ,    &Map::Cardfunc_Battleship },
+	{ 51	,6		,0		,"征服战舰" ,    &Map::Cardfunc_Battleship },
+	{ 52	,6		,0		,"征服战舰" ,    &Map::Cardfunc_Battleship },
 
 };
 Card RedCard[52];
@@ -363,6 +404,26 @@ int main()
 
 	(g_Map.*(g_CardTable[0].m_pfnCardSkill))(1, NULL);
 
+	Stack *pRedCardStack = new Stack(52);
+	for (size_t i = 0; i < sizeof(RedCard); ++i)
+	{
+		pRedCardStack->push(&RedCard[i]);
+	}
+	char RTbuf[5000];
+	sprintf_s(RTbuf,
+		"\n "
+		"   -------------------\n"
+		"    *   AncientCore   *\n"
+		"    *                 *\n"
+		"    *   CardNum  %d    *\n"
+		"    *                 *\n"
+		"    *   Score    %d    *\n"
+		"    *                 *\n"
+		"    -------------------\n"
+		,1,2
+		);
+	printf(RTbuf);
+	system("cls");
 	getchar();
 	getchar();
 }
