@@ -401,7 +401,9 @@ void SysInit()
 int main()
 {
 	SysInit();
-
+	system("cls");
+	system("mode con cols=150 lines=100");//改变宽高
+	system("color fc");//改变颜色
 	(g_Map.*(g_CardTable[0].m_pfnCardSkill))(1, NULL);
 
 	Stack *pRedCardStack = new Stack(52);
@@ -409,21 +411,71 @@ int main()
 	{
 		pRedCardStack->push(&RedCard[i]);
 	}
-	char RTbuf[5000];
+	char RTbuf[8000];
 	sprintf_s(RTbuf,
-		"\n "
-		"   -------------------\n"
-		"    *   AncientCore   *\n"
-		"    *                 *\n"
-		"    *   CardNum  %d    *\n"
-		"    *                 *\n"
-		"    *   Score    %d    *\n"
-		"    *                 *\n"
-		"    -------------------\n"
-		,1,2
+		"\n"
+		"\n"
+		"\n"
+		"    *  *  *  *  *  *              *  *  *  *  *  *              *  *  *  *  *  *              *  *  *  *  *  *              *  *  *  *  *  *    \n"
+		"    *              *              *              *              *              *              *              *              *              *    \n"
+		"    *              *              *              *              *              *              *              *              *              *    \n"
+		"    *  AncientCor  *              *    Docter    *              *   Crystal    *              *    FlyMan    *              *  Battleship  *    \n"
+		"    *              *              *              *              *              *              *              *              *              *    \n"
+		"    *  CardNum%3d  *     <----    *  CardNum%3d  *    ---->     *  CardNum%3d  *     <----    *  CardNum%3d  *              *  CardNum%3d  *    \n"
+		"    *              *              *              *              *              *              *              *              *              *    \n"
+		"    *  Score  %3d  *              *  Score  %3d  *              *  Score  %3d  *              *  Score  %3d  *              *  Score  %3d  *    \n"
+		"    *              *              *              *              *              *              *              *              *              *    \n"
+		"    *              *              *              *              *              *              *              *              *              *    \n"
+		"    *  *  *  *  *  *              *  *  *  *  *  *              *  *  *  *  *  *              *  *  *  *  *  *              *  *  *  *  *  *    \n"
+		"\n"
+		"                                        / \\                                                         / \\ \n"
+		"                                         |                                                           |   \n"
+		"                                         |                                                           |   \n"
+		"                                         |                                                           |   \n"
+		"\n"
+
+		"    *  *  *  *  *  *              *  *  *  *  *  *              *  *  *  *  *  *              *  *  *  *  *  *              *  *  *  *  *  *   \n"
+		"    *              *              *              *              *              *              *              *              *              *    \n"
+		"    *              *              *              *              *              *              *              *              *              *     \n"
+		"    *    Soldier   *              *   Monster    *              * SeachMachine *              *     Canno    *              *    Wating    *    \n"
+		"    *              *              *              *              *              *              *              *              *              *     \n"
+		"    *  CardNum%3d  *     ---->    *  CardNum%3d  *              *  CardNum%3d  *              *  CardNum%3d  *              *  CardNum%3d  *    \n"
+		"    *              *              *              *              *              *              *              *              *              *    \n"
+		"    *  Score  %3d  *              *  Score  %3d  *              *  Score  %3d  *              *  Score  %3d  *              *  Score  %3d  *    \n"
+		"    *              *              *              *              *              *              *              *              *              *    \n"
+		"    *              *              *              *              *              *              *              *              *              *    \n"
+		"    *  *  *  *  *  *              *  *  *  *  *  *              *  *  *  *  *  *              *  *  *  *  *  *              *  *  *  *  *  *    \n"
+		"\n"
+		"\n"
+		"\n"
+		"\n"
+		"\n"
+		"\n"
+		"    *  *  *  *  *  *        *  *  *  *  *  *        *  *  *  *  *  *        *  *  *  *  *  *        *  *  *  *  *  *   \n"
+		"    *              *        *              *        *              *        *              *        *              *    \n"
+		"    *              *        *              *        *              *        *              *        *              *     \n"
+		"    *    Soldier   *        *   Monster    *        * SeachMachine *        *     Canno    *        *    Wating    *    \n"
+		"    *              *        *              *        *              *        *              *        *              *     \n"
+		"    *  CardNum%3d  *        *  CardNum%3d  *        *  CardNum%3d  *        *  CardNum%3d  *        *  CardNum%3d  *    \n"
+		"    *              *        *              *        *              *        *              *        *              *    \n"
+		"    *  Score  %3d  *        *  Score  %3d  *        *  Score  %3d  *        *  Score  %3d  *        *  Score  %3d  *    \n"
+		"    *              *        *              *        *              *        *              *        *              *    \n"
+		"    *              *        *              *        *              *        *              *        *              *    \n"
+		"    *  *  *  *  *  *        *  *  *  *  *  *        *  *  *  *  *  *        *  *  *  *  *  *        *  *  *  *  *  *    \n"
+		"\n"
+		"\n"
+		"\n"
+		"\n"
+		"    Score:%3d   CardNum:%3d\n"
+
+
+
+
+
+		,1,2,3, 1, 2, 3,1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 33, 1, 2, 3, 3, 1, 2, 33, 1, 2, 3, 3, 1, 2, 33, 1, 2, 3
 		);
 	printf(RTbuf);
-	system("cls");
+	
 	getchar();
 	getchar();
 }
