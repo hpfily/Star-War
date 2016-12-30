@@ -30,14 +30,14 @@ typedef struct Card
 
 class Stack
 {
-	Card	*m_pBase;
-	Card	*m_pTop;
+	ptrCard	*m_pBase;
+	ptrCard	*m_pTop;
 	DWORD	m_Size;
 	DWORD	m_Max;
 public:
 	Stack(DWORD size)
 	{
-		m_pBase = (Card*)malloc(sizeof(Card)*size+1);
+		m_pBase = (ptrCard*)malloc(sizeof(ptrCard)*size+1);
 		m_pTop = m_pBase;
 		m_Size = 0;
 		m_Max = size;
@@ -65,7 +65,7 @@ public:
 		if (isFull())
 			return FALSE;
 		m_pTop++;
-		m_pTop = pCard;
+		*m_pTop = pCard;
 		m_Size++;
 		return TRUE;
 	}
@@ -75,7 +75,8 @@ public:
 		{
 			return FALSE;
 		}
-		*ppCard = m_pTop;
+		ppCard = m_pTop;
+		m_pTop = NULL;
 		m_pTop--;
 		m_Size--;
 		return TRUE;
@@ -85,14 +86,40 @@ public:
 	{
 		return m_Size;
 	}
+	ptrCard* getTop()
+	{
+		return m_pTop;
+	}
+	ptrCard* getBase()
+	{
+		return m_pBase;
+	}
 
+};
+enum MapRoleIndex
+{
+	AncientCore = 0,
+	Doctor,
+	Crystal,
+	FlyMan,
+	Battleship,
+	Monster,
+	Soldier,
+	SearchMachine,
+	Cannon,
+	Wating,
+
+	ScoreRed,
+	ScoreBlue,
+	WinShip,
 };
 class Map
 {
+
 	Stack	*m_pAncientCore;
 	Stack	*m_pDoctor;
 	Stack	*m_pCrystal;
-	Stack	*m_pFlyPeople;
+	Stack	*m_pFlyMan;
 	Stack	*m_pBattleship;
 	Stack	*m_pMonster;
 	Stack	*m_pSoldier;
@@ -103,6 +130,56 @@ class Map
 	Stack	*m_pScoreRed;
 	Stack	*m_pScoreBlue;
 	Stack	*m_pWinShip;
+	Stack*  m_GetRoleStack(MapRoleIndex Role)
+	{
+		switch (Role)
+		{
+		case AncientCore:
+			//printf("AncientCore\n");
+			return m_pAncientCore;
+			break;
+		case Doctor:
+			//printf("Doctor\n");
+			return m_pDoctor;
+			break;
+		case Crystal:
+			return m_pCrystal;
+			break;
+		case FlyMan:
+			return m_pFlyMan;
+			break;
+		case Battleship:
+			return m_pBattleship;
+			break;
+		case Monster:
+			return m_pMonster;
+			break;
+		case Soldier:
+			return m_pSoldier;
+			break;
+		case SearchMachine:
+			return m_pSearchMachine;
+			break;
+		case Cannon:
+			return m_pCannon;
+			break;
+		case Wating:
+			return m_pWating;
+			break;
+		case ScoreRed:
+			return m_pScoreRed;
+			break;
+		case ScoreBlue:
+			return m_pScoreBlue;
+			break;
+		case WinShip:
+			return m_pWinShip;
+			break;
+		default:
+			return NULL;
+			break;
+		}
+	}
 public:
 	Map()
 	{
@@ -110,7 +187,7 @@ public:
 		m_pAncientCore	= new Stack(12);
 		m_pDoctor		= new Stack(8);
 		m_pCrystal		= new Stack(18);
-		m_pFlyPeople	= new Stack(10);
+		m_pFlyMan	= new Stack(10);
 		m_pBattleship	= new Stack(3);
 		m_pMonster		= new Stack(8);
 		m_pSoldier		= new Stack(2);
@@ -129,7 +206,7 @@ public:
 		delete	m_pAncientCore;
 		delete	m_pDoctor;
 		delete	m_pCrystal;
-		delete	m_pFlyPeople;
+		delete	m_pFlyMan;
 		delete	m_pBattleship;
 		delete	m_pMonster;
 		delete	m_pSoldier;
@@ -142,7 +219,7 @@ public:
 		m_pAncientCore=NULL;
 		m_pDoctor=NULL;
 		m_pCrystal=NULL;
-		m_pFlyPeople=NULL;
+		m_pFlyMan=NULL;
 		m_pBattleship=NULL;
 		m_pMonster=NULL;
 		m_pSoldier=NULL;
@@ -152,6 +229,36 @@ public:
 		m_pScoreRed = NULL;
 		m_pScoreBlue = NULL;
 		m_pWinShip = NULL;
+	}
+	/*	
+	Stack* m_GetCoreStack() { return m_pAncientCore; }
+	Stack* m_GetDoctorStack() { return m_pDoctor; }
+	Stack* m_GetCrystalStack() { return m_pCrystal; }
+	Stack* m_GetFlyManStack() { return m_pFlyMan; }
+	Stack* m_GetBattleShipStack() { return m_pBattleship; }
+	Stack* m_GetMonsterStack() { return m_pMonster; }
+	Stack* m_GetSoldierStack() { return m_pSoldier; }
+	Stack* m_GetSearchMachineStack() { return m_pSearchMachine; }
+	Stack* m_GetCannonStack() { return m_pCannon; }
+	Stack* m_GetWatingStack() {re}
+	*/
+	DWORD  m_GetCardNum(MapRoleIndex Role)
+	{
+		return this->m_GetRoleStack(Role)->getSize();
+	}
+	DWORD m_GetScore(MapRoleIndex Role)
+	{
+		DWORD score=0;
+		Stack *pCardStack= this->m_GetRoleStack(Role);
+		Card  *pCard = pCardStack->getTop();
+		Card  *pCardBase = pCardStack->getBase();
+		while (pCard!=pCardBase)
+		{
+			score += pCard->m_Score;
+			pCard--;
+		}
+		
+		return score;
 	}
 
 	void m_fWinScore(DWORD camp, Stack *pCardStack)
@@ -214,9 +321,9 @@ public:
 		}
 
 	}
-	void Cardfunc_FlyPeople(DWORD camp, Card* pCard)
+	void Cardfunc_FlyMan(DWORD camp, Card* pCard)
 	{
-		m_pFlyPeople->push(pCard);
+		m_pFlyMan->push(pCard);
 
 		m_fWinScore(camp, m_pCrystal);
 
@@ -227,7 +334,7 @@ public:
 
 		if (m_pCannon->isFull())
 		{
-			m_fWinScore(camp, m_pFlyPeople);
+			m_fWinScore(camp, m_pFlyMan);
 			m_fWinScore(WAIT_ID, m_pWating);
 		}
 	}
@@ -276,11 +383,11 @@ Card  g_CardTable[52] =
 	{ 5		,3		,2		,"风暴巨炮"		,&Map::Cardfunc_Canno },
 	{ 6		,3		,2		,"风暴巨炮"		,&Map::Cardfunc_Canno },
 
-	{ 7		,2		,1		,"外星翼人" ,	&Map::Cardfunc_FlyPeople },
-	{ 8		,2		,1		,"外星翼人" ,	&Map::Cardfunc_FlyPeople },
-	{ 9		,2		,2		,"外星翼人" ,	&Map::Cardfunc_FlyPeople },
-	{ 10	,2		,2		,"外星翼人" ,	&Map::Cardfunc_FlyPeople },
-	{ 11	,1		,3		,"外星翼人" ,	&Map::Cardfunc_FlyPeople },
+	{ 7		,2		,1		,"外星翼人" ,	&Map::Cardfunc_FlyMan },
+	{ 8		,2		,1		,"外星翼人" ,	&Map::Cardfunc_FlyMan },
+	{ 9		,2		,2		,"外星翼人" ,	&Map::Cardfunc_FlyMan },
+	{ 10	,2		,2		,"外星翼人" ,	&Map::Cardfunc_FlyMan },
+	{ 11	,1		,3		,"外星翼人" ,	&Map::Cardfunc_FlyMan },
 
 	{ 12	,3		,1		,"能量水晶" ,	&Map::Cardfunc_Crystal },
 	{ 13	,3		,1		,"能量水晶" ,	&Map::Cardfunc_Crystal },
@@ -398,13 +505,16 @@ void SysInit()
 	CardInit();
 	ScoreInit();
 }
+
 int main()
 {
 	SysInit();
 	system("cls");
 	system("mode con cols=150 lines=100");//改变宽高
 	system("color fc");//改变颜色
-	(g_Map.*(g_CardTable[0].m_pfnCardSkill))(1, NULL);
+	(g_Map.*(g_CardTable[0].m_pfnCardSkill))(1, &g_CardTable[0]);
+	(g_Map.*(g_CardTable[0].m_pfnCardSkill))(1, &g_CardTable[2]);
+	(g_Map.*(g_CardTable[0].m_pfnCardSkill))(1, &g_CardTable[5]);
 
 	Stack *pRedCardStack = new Stack(52);
 	for (size_t i = 0; i < sizeof(RedCard); ++i)
@@ -467,14 +577,12 @@ int main()
 		"\n"
 		"\n"
 		"    Score:%3d   CardNum:%3d\n"
-
-
-
-
-
-		,1,2,3, 1, 2, 3,1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 33, 1, 2, 3, 3, 1, 2, 33, 1, 2, 3, 3, 1, 2, 33, 1, 2, 3
+		, g_Map.m_GetCardNum(Cannon), g_Map.m_GetScore(Cannon)
+		,1,2,3, 1, 2, 3,1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 33, 1, 2, 3, 3, 1, 2, 33, 1, 2, 3, 3, 1
 		);
 	printf(RTbuf);
+	
+
 	
 	getchar();
 	getchar();
