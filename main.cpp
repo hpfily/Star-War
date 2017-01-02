@@ -14,7 +14,7 @@
 
 #define RANDOM(x) (rand()%x)
 
-typedef unsigned int DWORD;
+typedef __int32 DWORD;
 
 
 class  Map;
@@ -230,32 +230,21 @@ public:
 		m_pScoreBlue = NULL;
 		m_pWinShip = NULL;
 	}
-	/*	
-	Stack* m_GetCoreStack() { return m_pAncientCore; }
-	Stack* m_GetDoctorStack() { return m_pDoctor; }
-	Stack* m_GetCrystalStack() { return m_pCrystal; }
-	Stack* m_GetFlyManStack() { return m_pFlyMan; }
-	Stack* m_GetBattleShipStack() { return m_pBattleship; }
-	Stack* m_GetMonsterStack() { return m_pMonster; }
-	Stack* m_GetSoldierStack() { return m_pSoldier; }
-	Stack* m_GetSearchMachineStack() { return m_pSearchMachine; }
-	Stack* m_GetCannonStack() { return m_pCannon; }
-	Stack* m_GetWatingStack() {re}
-	*/
+
 	DWORD  m_GetCardNum(MapRoleIndex Role)
 	{
-		return this->m_GetRoleStack(Role)->getSize();
+		return m_GetRoleStack(Role)->getSize();
 	}
 	DWORD m_GetScore(MapRoleIndex Role)
 	{
 		DWORD score=0;
-		Stack *pCardStack= this->m_GetRoleStack(Role);
-		Card  *pCard = pCardStack->getTop();
-		Card  *pCardBase = pCardStack->getBase();
-		while (pCard!=pCardBase)
+		Stack *pCardStack= m_GetRoleStack(Role);
+		ptrCard  *ppCard = pCardStack->getTop();
+		ptrCard  *pBase = pCardStack->getBase();
+		while (ppCard!= pBase)
 		{
-			score += pCard->m_Score;
-			pCard--;
+			score += (*ppCard)->m_Score;
+			ppCard--;
 		}
 		
 		return score;
@@ -506,7 +495,7 @@ void SysInit()
 	ScoreInit();
 }
 
-int main()
+int main__()
 {
 	SysInit();
 	system("cls");
@@ -522,6 +511,7 @@ int main()
 		pRedCardStack->push(&RedCard[i]);
 	}
 	char RTbuf[8000];
+
 	sprintf_s(RTbuf,
 		"\n"
 		"\n"
@@ -529,7 +519,7 @@ int main()
 		"    *  *  *  *  *  *              *  *  *  *  *  *              *  *  *  *  *  *              *  *  *  *  *  *              *  *  *  *  *  *    \n"
 		"    *              *              *              *              *              *              *              *              *              *    \n"
 		"    *              *              *              *              *              *              *              *              *              *    \n"
-		"    *  AncientCor  *              *    Docter    *              *   Crystal    *              *    FlyMan    *              *  Battleship  *    \n"
+		"    *  AncientCor  *              *    Doctor    *              *   Crystal    *              *    FlyMan    *              *  Battleship  *    \n"
 		"    *              *              *              *              *              *              *              *              *              *    \n"
 		"    *  CardNum%3d  *     <----    *  CardNum%3d  *    ---->     *  CardNum%3d  *     <----    *  CardNum%3d  *              *  CardNum%3d  *    \n"
 		"    *              *              *              *              *              *              *              *              *              *    \n"
@@ -577,8 +567,12 @@ int main()
 		"\n"
 		"\n"
 		"    Score:%3d   CardNum:%3d\n"
-		, g_Map.m_GetCardNum(Cannon), g_Map.m_GetScore(Cannon)
-		,1,2,3, 1, 2, 3,1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 33, 1, 2, 3, 3, 1, 2, 33, 1, 2, 3, 3, 1
+		, g_Map.m_GetCardNum(AncientCore), g_Map.m_GetCardNum(Doctor), g_Map.m_GetCardNum(Crystal), g_Map.m_GetCardNum(FlyMan), g_Map.m_GetCardNum(Battleship)
+		, g_Map.m_GetScore(AncientCore), g_Map.m_GetScore(Doctor), g_Map.m_GetScore(Crystal), g_Map.m_GetScore(FlyMan), g_Map.m_GetScore(Battleship)
+
+		, g_Map.m_GetCardNum(Soldier), g_Map.m_GetCardNum(Monster), g_Map.m_GetCardNum(SearchMachine), g_Map.m_GetCardNum(Cannon), g_Map.m_GetCardNum(Wating)
+		, g_Map.m_GetScore(Soldier), g_Map.m_GetScore(Monster), g_Map.m_GetScore(SearchMachine), g_Map.m_GetScore(Cannon), g_Map.m_GetScore(Wating)
+		,1,2,3, 1, 2, 3,1, 2, 3, 1, 2, 3, 1, 2, 3
 		);
 	printf(RTbuf);
 	
@@ -586,4 +580,5 @@ int main()
 	
 	getchar();
 	getchar();
+	return 0;
 }
