@@ -14,7 +14,8 @@
 
 #define RANDOM(x) (rand()%x)
 
-typedef __int32 DWORD;
+typedef unsigned int DWORD;
+
 
 
 class  Map;
@@ -75,8 +76,8 @@ public:
 		{
 			return FALSE;
 		}
-		ppCard = m_pTop;
-		m_pTop = NULL;
+		*ppCard = *m_pTop;
+		*m_pTop = NULL;
 		m_pTop--;
 		m_Size--;
 		return TRUE;
@@ -324,7 +325,7 @@ public:
 		if (m_pCannon->isFull())
 		{
 			m_fWinScore(camp, m_pFlyMan);
-			m_fWinScore(WAIT_ID, m_pWating);
+			m_fWinScore(WAIT_ID, m_pCannon);
 		}
 	}
 	void Cardfunc_Battleship(DWORD camp, Card* pCard)
@@ -494,26 +495,61 @@ void SysInit()
 	CardInit();
 	ScoreInit();
 }
-
-int main__()
+class  HandCard
 {
-	SysInit();
-	system("cls");
-	system("mode con cols=150 lines=100");//改变宽高
-	system("color fc");//改变颜色
-	(g_Map.*(g_CardTable[0].m_pfnCardSkill))(1, &g_CardTable[0]);
-	(g_Map.*(g_CardTable[0].m_pfnCardSkill))(1, &g_CardTable[2]);
-	(g_Map.*(g_CardTable[0].m_pfnCardSkill))(1, &g_CardTable[5]);
-
-	Stack *pRedCardStack = new Stack(52);
-	for (size_t i = 0; i < sizeof(RedCard); ++i)
+public:
+	ptrCard m_pHandCard[6];
+	union
 	{
-		pRedCardStack->push(&RedCard[i]);
+		struct
+		{
+			DWORD  Maskindex1 : 1;
+			DWORD  Maskindex2 : 1;
+			DWORD  Maskindex3 : 1;
+			DWORD  Maskindex4 : 1;
+			DWORD  Maskindex5 : 1;
+			DWORD  Maskindex6 : 1;
+		};
+		DWORD MaskValue;
+	};
+	void m_PickCard(Stack *pCardStack)
+	{
+
+		if (MaskValue)
+		{
+			DWORD mask = MaskValue;
+			DWORD index = 0;
+			while (mask != 0)
+			{
+				if (mask & 0x1)
+				{
+					pCardStack->pop(&m_pHandCard[index]);
+				}
+				mask >>= 1;
+				++index;
+			}
+			MaskValue = 0x0;
+		}
 	}
+	void m_OutCard()
+	{
+		DWORD cardnum = 0;
+		scanf_s("%d", &cardnum);
+		Card *outcard = m_pHandCard[cardnum - 1];
+		(g_Map.*(outcard->m_pfnCardSkill))(1, outcard);
+		MaskValue |= 1 << (cardnum - 1);
+	}
+
+};
+void display(HandCard phc)
+{
+	system("cls");
 	char RTbuf[8000];
 
 	sprintf_s(RTbuf,
 		"\n"
+		"    Total Card Number: %d\n"
+		"    Total Card Score:  %d\n"
 		"\n"
 		"\n"
 		"    *  *  *  *  *  *              *  *  *  *  *  *              *  *  *  *  *  *              *  *  *  *  *  *              *  *  *  *  *  *    \n"
@@ -554,10 +590,8 @@ int main__()
 		"    *  *  *  *  *  *        *  *  *  *  *  *        *  *  *  *  *  *        *  *  *  *  *  *        *  *  *  *  *  *   \n"
 		"    *              *        *              *        *              *        *              *        *              *    \n"
 		"    *              *        *              *        *              *        *              *        *              *     \n"
-		"    *    Soldier   *        *   Monster    *        * SeachMachine *        *     Canno    *        *    Wating    *    \n"
+		"    *   %s   *        *   %s   *        *   %s   *        *   %s   *        *   %s   *    \n"
 		"    *              *        *              *        *              *        *              *        *              *     \n"
-		"    *  CardNum%3d  *        *  CardNum%3d  *        *  CardNum%3d  *        *  CardNum%3d  *        *  CardNum%3d  *    \n"
-		"    *              *        *              *        *              *        *              *        *              *    \n"
 		"    *  Score  %3d  *        *  Score  %3d  *        *  Score  %3d  *        *  Score  %3d  *        *  Score  %3d  *    \n"
 		"    *              *        *              *        *              *        *              *        *              *    \n"
 		"    *              *        *              *        *              *        *              *        *              *    \n"
@@ -566,16 +600,45 @@ int main__()
 		"\n"
 		"\n"
 		"\n"
-		"    Score:%3d   CardNum:%3d\n"
+		, g_Map.m_GetCardNum(ScoreRed)
+		, g_Map.m_GetScore(ScoreRed)
 		, g_Map.m_GetCardNum(AncientCore), g_Map.m_GetCardNum(Doctor), g_Map.m_GetCardNum(Crystal), g_Map.m_GetCardNum(FlyMan), g_Map.m_GetCardNum(Battleship)
 		, g_Map.m_GetScore(AncientCore), g_Map.m_GetScore(Doctor), g_Map.m_GetScore(Crystal), g_Map.m_GetScore(FlyMan), g_Map.m_GetScore(Battleship)
 
 		, g_Map.m_GetCardNum(Soldier), g_Map.m_GetCardNum(Monster), g_Map.m_GetCardNum(SearchMachine), g_Map.m_GetCardNum(Cannon), g_Map.m_GetCardNum(Wating)
 		, g_Map.m_GetScore(Soldier), g_Map.m_GetScore(Monster), g_Map.m_GetScore(SearchMachine), g_Map.m_GetScore(Cannon), g_Map.m_GetScore(Wating)
-		,1,2,3, 1, 2, 3,1, 2, 3, 1, 2, 3, 1, 2, 3
+
+		, phc.m_pHandCard[0]->m_strName, phc.m_pHandCard[1]->m_strName, phc.m_pHandCard[2]->m_strName, phc.m_pHandCard[3]->m_strName, phc.m_pHandCard[4]->m_strName
+		, phc.m_pHandCard[0]->m_Score, phc.m_pHandCard[1]->m_Score, phc.m_pHandCard[2]->m_Score, phc.m_pHandCard[3]->m_Score, phc.m_pHandCard[4]->m_Score
+
 		);
 	printf(RTbuf);
-	
+}
+
+Stack *pRedCardStack;
+int main()
+{
+	SysInit();
+	system("cls");
+	system("mode con cols=150 lines=100");//改变宽高
+	system("color fc");//改变颜色
+
+	pRedCardStack = new Stack(52);
+	for (size_t i = 0; i < sizeof(RedCard); ++i)
+	{
+		pRedCardStack->push(&RedCard[i]);
+	}
+
+
+	HandCard hc;
+	hc.MaskValue = 0x1F;
+	while (true)
+	{
+		hc.m_PickCard(pRedCardStack);
+		display(hc);
+		hc.m_OutCard();
+	}
+
 
 	
 	getchar();
